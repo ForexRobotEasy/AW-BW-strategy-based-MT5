@@ -1,0 +1,88 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                  AW BW strategy |
+//|                             Copyright 2021, Forex Robot Easy Team |
+//|                                        https://forexroboteasy.com|
+//+------------------------------------------------------------------+
+#property copyright 'Forex Robot Easy Team'
+#property link      'https://forexroboteasy.com'
+
+// Global variables
+double AccountBalance = 10000; // Initial account balance
+double RiskPercentage = 2; // Risk percentage per trade
+int StopLossPips = 50; // Stop loss in pips
+bool AveragingEnabled = true; // Averaging feature enabled or disabled
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Calculate trading volumes based on account balance and risk percentage
+    double Volume = AccountBalance * RiskPercentage / 100;
+    double LotSize = NormalizeDouble(SymbolInfoDouble(Symbol(), SYMBOL_VOLUME_MIN), SymbolInfoInteger(Symbol(), SYMBOL_VOLUME_DIGITS));
+    int Lots = Volume / LotSize;
+
+    // Place initial trade
+    if (AveragingEnabled)
+    {
+        // Implement averaging feature
+        // Add logic for averaging conditions
+        if (Condition1 && Condition2)
+        {
+            // Calculate new trading volume for averaging
+            double NewVolume = Volume * 2;
+            int NewLots = NewVolume / LotSize;
+
+            // Place additional trade with new trading volume
+            OrderSend(Symbol(), OP_BUY, NewLots, Ask, Slippage, StopLoss, TakeProfit, 'Averaging Trade', MagicNumber);
+        }
+    }
+    else
+    {
+        // Place initial trade with calculated trading volume
+        OrderSend(Symbol(), OP_BUY, Lots, Ask, Slippage, StopLoss, TakeProfit, 'Initial Trade', MagicNumber);
+    }
+
+    return INIT_SUCCEEDED;
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check for open trades
+    int TotalOrders = OrdersTotal();
+    if (TotalOrders > 0)
+    {
+        // Loop through open trades
+        for (int i = 0; i < TotalOrders; i++)
+        {
+            if (OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+            {
+                // Check for trailing stop conditions
+                if (Profit > TrailingStopPips)
+                {
+                    // Adjust stop loss level
+                    double NewStopLoss = Bid - TrailingStopPips * Point;
+                    OrderModify(OrderTicket(), OrderOpenPrice(), NewStopLoss, OrderTakeProfit(), 0, Green);
+                }
+            }
+        }
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Custom functions                                                 |
+//+------------------------------------------------------------------+
+bool Condition1()
+{
+    // Add logic for averaging condition 1
+}
+
+bool Condition2()
+{
+    // Add logic for averaging condition 2
+}
+
